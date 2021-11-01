@@ -1,13 +1,14 @@
 package com.instacart.android.challenges
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), MainActivityViewModel.UpdateListener {
 
     private val viewModel: MainActivityViewModel by viewModels()
 
@@ -20,13 +21,14 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         bindViews()
 
-        viewModel.setStateUpdateListener(object : MainActivityViewModel.UpdateListener {
-            override fun onUpdate(state: ItemListViewState) = renderItemList(state)
-        })
+        viewModel.setStateUpdateListener(this)
     }
 
     private fun renderItemList(state: ItemListViewState) {
-
+        supportActionBar?.apply {
+            title = state.toolbarTitle
+        }
+        adapter.update(state.items)
     }
 
     private fun bindViews() {
@@ -38,5 +40,13 @@ class MainActivity : AppCompatActivity() {
 
         adapter = ItemAdapter()
         recyclerView.adapter = adapter
+    }
+
+    override fun onUpdate(state: ItemListViewState) {
+        renderItemList(state)
+    }
+
+    override fun onError(throwable: Throwable?) {
+        Toast.makeText(this, "Oops, an error occurred $throwable", Toast.LENGTH_LONG).show()
     }
 }
